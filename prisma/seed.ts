@@ -16,3 +16,10 @@ async function main() {
     console.log({ user });
     
 }
+main()
+   .then(() => prisma.$disconnect())
+   .catch(async(e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit((1))
+   })
