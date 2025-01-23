@@ -23,4 +23,114 @@ model User {
   updated_at    DateTime   @updatedAt
   products      Product[]
   orders        Order[]
- }
+}
+model Product {
+  id          Int                @id @default(autoincrement())
+  user_id     Int
+  user        User               @relation(fields: [user_id], references: [id])
+  title       String
+  description String?
+  price       Int
+  type        ProductType
+  status      ProductStatus      @default(active)
+  currency    String
+  created_at  DateTime           @default(now())
+  updated_at  DateTime           @updatedAt
+  pdfProduct  PdfProduct?
+  videoProduct VideoProduct?
+  appointmentSlots AppointmentSlot[]
+  orders      Order[]
+}
+
+model PdfProduct {
+  id         Int      @id @default(autoincrement())
+  product_id Int      @unique
+  product    Product  @relation(fields: [product_id], references: [id])
+  file_path  String
+  file_size  Int
+  file_name  String
+}
+
+model VideoProduct {
+  id         Int      @id @default(autoincrement())
+  product_id Int      @unique
+  product    Product  @relation(fields: [product_id], references: [id])
+  video_url  String
+  platform   VideoPlatform
+  duration   Int
+}
+
+model AppointmentSlot {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  product    Product  @relation(fields: [product_id], references: [id])
+  start_time DateTime
+  end_time   DateTime
+  is_booked  Boolean  @default(false)
+  timezone   String
+}
+
+model Order {
+  id              Int                 @id @default(autoincrement())
+  user_id         Int
+  user            User                @relation(fields: [user_id], references: [id])
+  product_id      Int
+  product         Product             @relation(fields: [product_id], references: [id])
+  amount          Int
+  currency        String
+  status          OrderStatus         @default(pending)
+  payment_method  PaymentMethod
+  payment_reference String?
+  created_at      DateTime            @default(now())
+  updated_at      DateTime            @updatedAt
+  transactions    PaymentTransaction[]
+}
+model PaymentTransaction {
+  id                Int      @id @default(autoincrement())
+  order_id          Int
+  order             Order    @relation(fields: [order_id], references: [id])
+  amount            Int
+  currency          String
+  provider          PaymentProvider
+  provider_reference String?
+  status            PaymentStatus @default(pending)
+  metadata          Json?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+}
+enum ProductType {
+  pdf
+  video
+  appointment
+}
+enum ProductStatus {
+  active
+  inactive
+}
+enum VideoPlatform {
+  youtube
+  dropbox
+  other
+}
+enum OrderStatus {
+  pending
+  completed
+  failed
+}
+enum PaymentMethod {
+  mpesa
+  airtel
+  pesalink
+  card
+}
+enum PaymentProvider {
+  mpesa
+  airtel
+  pesalink
+  card
+}
+enum PaymentStatus {
+  pending
+  completed
+  failed
+}
