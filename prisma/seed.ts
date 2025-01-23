@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { log } from "console";
 
 const prisma = new PrismaClient
 
@@ -14,7 +13,6 @@ async function main() {
         }
     })
     console.log({ user });
-    
 }
 main()
    .then(() => prisma.$disconnect())
