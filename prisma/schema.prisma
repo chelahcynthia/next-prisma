@@ -56,14 +56,107 @@ enum PaymentStatus {
   failed
 }
 model User {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
+  id            Int                 @id @default(autoincrement())
+  email         String              @unique
   full_name     String
   password_hash String
   phone_number  String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  created_at    DateTime            @default(now())
+  updated_at    DateTime            @updatedAt
+
+  products      Product[]           @relation("UserProducts")
+  orders        Order[]             @relation("UserOrders")
 
   @@map("users")
+}
+model PdfProduct {
+  id         Int      @id @default(autoincrement())
+  product_id Int      @unique
+  product    Product  @relation(fields: [product_id], references: [id])
+  file_path  String
+  file_size  Int
+  file_name  String
+
+  @@map("pdf_products")
+}
+
+model VideoProduct {
+  id         Int          @id @default(autoincrement())
+  product_id Int          @unique
+  product    Product      @relation(fields: [product_id], references: [id])
+  video_url  String
+  platform   VideoPlatform
+  duration   Int
+
+  @@map("video_products")
+}
+
+model AppointmentSlot {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  product    Product  @relation(fields: [product_id], references: [id])
+  start_time DateTime
+  end_time   DateTime
+  is_booked  Boolean  @default(false)
+  timezone   String
+
+  @@map("appointment_slots")
+}
+
+model Order {
+  id               Int                  @id @default(autoincrement())
+  user_id          Int
+  user             User                 @relation("UserOrders", fields: [user_id], references: [id])
+  product_id       Int
+  product          Product              @relation(fields: [product_id], references: [id])
+  amount           Int
+  currency         String
+  status           OrderStatus          @default(pending)
+  payment_method   PaymentMethod
+  payment_reference String?
+  created_at       DateTime             @default(now())
+  updated_at       DateTime             @updatedAt
+
+  paymentTransactions PaymentTransaction[]
+
+  @@map("orders")
+ 
+}
+model PaymentTransaction {
+  id                 Int              @id @default(autoincrement())
+  order_id           Int
+  order              Order            @relation(fields: [order_id], references: [id])
+  amount             Int
+  currency           String
+  provider           PaymentProvider
+  provider_reference String?
+  status             PaymentStatus    @default(pending)
+  metadata           Json?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  @@map("payment_transactions")
+}
+
+model Product {
+   id          Int           @id @default(autoincrement())
+  user_id     Int
+  user        User          @relation("UserProducts", fields: [user_id], references: [id])
+  title       String
+  description String?
+  price       Int
+  type        ProductType
+  status      ProductStatus @default(active)
+  currency    String
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+
+  pdfProduct        PdfProduct?
+  videoProduct      VideoProduct?
+  appointmentSlots  AppointmentSlot[]
+  orders            Order[]
+
+  @@map("products")
+  
 }
 
