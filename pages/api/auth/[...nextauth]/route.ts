@@ -52,4 +52,29 @@ export const authOptions: NextAuthOptions = {
           }
         })
       ],
+
+    //   custom pages for authentication
+    pages: {
+        signIn: '/auth/login',
+        error: '/auth/error',
+    },
+     // Callbacks to customize session and JWT handling
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+      }
+      return session
+    }
+  }
 }
+
+// Export handler functions
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
