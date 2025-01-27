@@ -60,7 +60,7 @@ model User {
   email         String              @unique
   full_name     String
   password_hash String
-  phone_number  String?
+  phone_number  String 
   created_at    DateTime            @default(now())
   updated_at    DateTime            @updatedAt
 
