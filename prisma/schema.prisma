@@ -1,16 +1,109 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  full_name     String
+  password_hash String
+  phone_number  String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  orders        Order[]   @relation("UserOrders")
+  products      Product[] @relation("UserProducts")
+
+  @@map("users")
+}
+
+model PdfProduct {
+  id         Int     @id @default(autoincrement())
+  product_id Int     @unique
+  file_url   String
+  product    Product @relation(fields: [product_id], references: [id])
+
+  @@map("pdf_products")
+}
+
+model VideoProduct {
+  id         Int           @id @default(autoincrement())
+  product_id Int           @unique
+  video_url  String
+  platform   VideoPlatform
+  product    Product       @relation(fields: [product_id], references: [id])
+
+  @@map("video_products")
+}
+
+model AppointmentSlot {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  start_time DateTime
+  end_time   DateTime
+  is_booked  Boolean  @default(false)
+  timezone   String
+  product    Product  @relation(fields: [product_id], references: [id])
+
+  @@map("appointment_slots")
+}
+
+model Order {
+  id                  Int                  @id @default(autoincrement())
+  user_id             Int
+  product_id          Int
+  amount              Int
+  currency            String
+  status              OrderStatus          @default(pending)
+  payment_method      PaymentMethod
+  payment_reference   String?
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @updatedAt
+  product             Product              @relation(fields: [product_id], references: [id])
+  user                User                 @relation("UserOrders", fields: [user_id], references: [id])
+  paymentTransactions PaymentTransaction[]
+
+  @@map("orders")
+}
+
+model PaymentTransaction {
+  id                 Int             @id @default(autoincrement())
+  order_id           Int
+  amount             Int
+  currency           String
+  provider           PaymentProvider
+  provider_reference String?
+  status             PaymentStatus   @default(pending)
+  metadata           Json?
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  order              Order           @relation(fields: [order_id], references: [id])
+
+  @@map("payment_transactions")
+}
+
+model Product {
+  id               Int               @id @default(autoincrement())
+  user_id          Int
+  title            String
+  description      String?
+  price            Int
+  type             ProductType
+  status           ProductStatus     @default(active)
+  currency         String
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+  appointmentSlots AppointmentSlot[]
+  orders           Order[]
+  pdfProduct       PdfProduct?
+  user             User              @relation("UserProducts", fields: [user_id], references: [id])
+  videoProduct     VideoProduct?
+
+  @@map("products")
 }
 
 enum ProductType {
@@ -55,108 +148,3 @@ enum PaymentStatus {
   completed
   failed
 }
-model User {
-  id            Int                 @id @default(autoincrement())
-  email         String              @unique
-  full_name     String
-  password_hash String
-  phone_number  String 
-  created_at    DateTime            @default(now())
-  updated_at    DateTime            @updatedAt
-
-  products      Product[]           @relation("UserProducts")
-  orders        Order[]             @relation("UserOrders")
-
-  @@map("users")
-}
-model PdfProduct {
-  id         Int      @id @default(autoincrement())
-  product_id Int      @unique
-  product    Product  @relation(fields: [product_id], references: [id])
-  file_path  String
-  file_size  Int
-  file_name  String
-
-  @@map("pdf_products")
-}
-
-model VideoProduct {
-  id         Int          @id @default(autoincrement())
-  product_id Int          @unique
-  product    Product      @relation(fields: [product_id], references: [id])
-  video_url  String
-  platform   VideoPlatform
-  duration   Int
-
-  @@map("video_products")
-}
-
-model AppointmentSlot {
-  id         Int      @id @default(autoincrement())
-  product_id Int
-  product    Product  @relation(fields: [product_id], references: [id])
-  start_time DateTime
-  end_time   DateTime
-  is_booked  Boolean  @default(false)
-  timezone   String
-
-  @@map("appointment_slots")
-}
-
-model Order {
-  id               Int                  @id @default(autoincrement())
-  user_id          Int
-  user             User                 @relation("UserOrders", fields: [user_id], references: [id])
-  product_id       Int
-  product          Product              @relation(fields: [product_id], references: [id])
-  amount           Int
-  currency         String
-  status           OrderStatus          @default(pending)
-  payment_method   PaymentMethod
-  payment_reference String?
-  created_at       DateTime             @default(now())
-  updated_at       DateTime             @updatedAt
-
-  paymentTransactions PaymentTransaction[]
-
-  @@map("orders")
- 
-}
-model PaymentTransaction {
-  id                 Int              @id @default(autoincrement())
-  order_id           Int
-  order              Order            @relation(fields: [order_id], references: [id])
-  amount             Int
-  currency           String
-  provider           PaymentProvider
-  provider_reference String?
-  status             PaymentStatus    @default(pending)
-  metadata           Json?
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
-
-  @@map("payment_transactions")
-}
-
-model Product {
-   id          Int           @id @default(autoincrement())
-  user_id     Int
-  user        User          @relation("UserProducts", fields: [user_id], references: [id])
-  title       String
-  description String?
-  price       Int
-  type        ProductType
-  status      ProductStatus @default(active)
-  currency    String
-  created_at  DateTime      @default(now())
-  updated_at  DateTime      @updatedAt
-
-  pdfProduct        PdfProduct?
-  videoProduct      VideoProduct?
-  appointmentSlots  AppointmentSlot[]
-  orders            Order[]
-
-  @@map("products")
-  
-}
-
