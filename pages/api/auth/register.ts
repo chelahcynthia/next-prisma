@@ -42,7 +42,19 @@ export default async function name(req: NextApiRequest, res: NextApiResponse) {
                     password_hash,
                     phone_number,
                 },
-            })
+            });
+
+            // respond to the client
+            return res.status(201).json({
+                success: true,
+                message: "User registered successfuly",
+                data: user,
+            });
+        } catch (error) {
+            console.error("Error creating user:", error);
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                
+            }
         }
     }
     
