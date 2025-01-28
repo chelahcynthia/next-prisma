@@ -26,6 +26,21 @@ export async function POST(request: Request) {
               { status: 400 }
             )
           }
+
+        // hash password
+        const hashedPassword = await bcrypt.hash(password, 12)
+        // create new user
+        const user = await prisma.user.create({
+            data: {
+              email,
+              full_name,
+              password_hash: hashedPassword,
+              phone_number,
+            },
+        })
+        // remove password from response
+        const { password_hash, ...userWithoutPassword } = user
+
     }catch(error) {
 
     }
