@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import bcrypt from 'bcryptjs'
-import prisma from '@/lib/prisma'
-import { error } from "console";
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
     try{
-        const body = await request.json()
+        let body;
+        try {
+            body = await request.json()
+        } catch (error) {
+            return NextResponse.json(
+                { error: 'Invalid JSON' },
+                { status: 400 }
+            )
+        }
+        
         const { email, full_name, password, phone_number} = body
 
         // validations
@@ -40,8 +48,16 @@ export async function POST(request: Request) {
         })
         // remove password from response
         const { password_hash, ...userWithoutPassword } = user
+        return NextResponse.json({
+            user: userWithoutPassword,
+            message: 'User created successfully',
+        })
 
     }catch(error) {
-
-    }
+        console.error('Registration error:', error)
+    return NextResponse.json(
+      { error: 'Something went wrong' },
+      { status: 500 }
+    )
+  }
 }
