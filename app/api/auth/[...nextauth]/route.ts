@@ -1,80 +1,76 @@
-import { NextAuthOptions } from "next-auth"
-import NextAuth from "next-auth/next"
-import CredentialsProvider from "next-auth/providers/credentials"
-import prisma from "@/lib/prisma"
-import bcrypt from "bcryptjs
+import { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth/next";
+import CredentialsProvider from "next-auth/providers/credentials";
+import prisma from "@/lib/prisma";
+import bcrypt from "bcryptjs"; // Fixed import
 
 export const authOptions: NextAuthOptions = {
-    session: {
-        strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60,
-    },
-    // configure auth providers
-    providers: [
-        CredentialsProvider({
-          name: "Credentials",
-          credentials: {
-            email: { label: "Email", type: "email" },
-            password: { label: "Password", type: "password" }
-          },
-          async authorize(credentials) {
-            if (!credentials?.email || !credentials?.password) {
-              throw new Error("Please enter your email and password")
-            }
-    
-            // Find user by email
-            const user = await prisma.user.findUnique({
-              where: {
-                email: credentials.email
-              }
-            })
-    
-            // Check if user exists and password is correct
-            if (!user || !user.password_hash) {
-              throw new Error("No user found with this email")
-            }
-    
-            const isPasswordValid = await bcrypt.compare(
-              credentials.password,
-              user.password_hash
-            )
-    
-            if (!isPasswordValid) {
-              throw new Error("Invalid password")
-            }
-    
-            // Return user object without password
-            return {
-              id: user.id.toString(),
-              email: user.email,
-              name: user.full_name
-            }
-          }
-        })
-      ],
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Please enter your email and password");
+        }
 
-    //   custom pages for authentication
-    pages: {
-        signIn: '/auth/login',
-        error: '/auth/error',
-    },
-     // Callbacks to customize session and JWT handling
+        // Find user by email
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        });
+
+        // Check if user exists and password is correct
+        if (!user || !user.password_hash) {
+          throw new Error("No user found with this email");
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password_hash
+        );
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid password");
+        }
+
+        // Return user object without password
+        return {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.full_name,
+        };
+      },
+    }),
+  ],
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
+        token.id = user.id;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
+        session.user.id = token.id as string;
       }
-      return session
-    }
-  }
-}
+      return session;
+    },
+  },
+};
 
 // Export handler functions
-const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
