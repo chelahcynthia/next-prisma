@@ -29,11 +29,14 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-    </form>
+    <div className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
+      <div className="w-full max-w-md rounded-lg bg-gray-800 p-8 shadow-lg">
+        <h2 className="mb-6 text-center text-2xl font-bold">Login</h2>
+
+
+      </div>
+
+    </div>
+
   );
 }
