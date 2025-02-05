@@ -42,7 +42,19 @@ export default function LoginPage() {
               required
               className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-white focus:border-blue-400 focus:outline-none"></input>
           </div>
-
+          <div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+              className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-white focus:border-blue-400 focus:outline-none"></input>
+          </div>
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-blue-600 px-4 py-2 font-bold hover:bg-blue-500 transition duration-300">
+            Login
+            </button>
         </form>
       </div>
     </div>
