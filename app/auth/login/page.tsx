@@ -24,7 +24,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      router.push("/"); // Use router instead of window.location.href
+      router.push("/"); // Use router 
     }
   };
 
